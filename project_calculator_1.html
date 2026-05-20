@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Калькулятор годин на проект</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #F5F2ED; --card: #FFFFFF; --text: #1A1814; --muted: #7A7569;
+    --border: #E2DDD6; --accent: #2D5A3D; --accent-light: #EAF2EC;
+    --accent-text: #1C3D28; --warn: #8B5E2A; --warn-light: #FDF3E7;
+    --danger: #8B2A2A; --danger-light: #FDEAEA; --tag-bg: #EDEAE4;
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 2rem 1rem; }
+  .container { max-width: 640px; margin: 0 auto; }
+  .header { margin-bottom: 2rem; }
+  .header h1 { font-size: 22px; font-weight: 500; letter-spacing: -0.02em; margin-bottom: 4px; }
+  .header p { font-size: 13px; color: var(--muted); }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem; }
+  .section-label { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
+  .type-row { display: flex; gap: 6px; }
+  .type-btn { flex: 1; padding: 9px 8px; font-size: 12px; font-family: 'DM Sans', sans-serif; font-weight: 400; border: 1px solid var(--border); border-radius: 10px; background: transparent; color: var(--muted); cursor: pointer; transition: all 0.15s; text-align: center; }
+  .type-btn:hover { border-color: var(--accent); color: var(--text); }
+  .type-btn.active { background: var(--accent-light); border-color: var(--accent); color: var(--accent-text); font-weight: 500; }
+  .slider-group { margin-bottom: 1.25rem; }
+  .slider-group:last-child { margin-bottom: 0; }
+  .slider-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  .slider-header label { font-size: 13px; color: var(--muted); }
+  .slider-header .val { font-family: 'DM Mono', monospace; font-size: 15px; font-weight: 500; color: var(--text); }
+  input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 3px; background: var(--border); border-radius: 2px; outline: none; cursor: pointer; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 3px solid white; box-shadow: 0 0 0 1px var(--accent); }
+  .divider { height: 1px; background: var(--border); margin: 1.25rem 0; }
+  .projects-hint { font-size: 11px; color: var(--muted); margin-top: 6px; font-style: italic; }
+  .costs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .cost-item { display: flex; flex-direction: column; gap: 5px; }
+  .cost-item label { font-size: 11px; color: var(--muted); line-height: 1.3; }
+  .cost-item input[type=number] { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; outline: none; width: 100%; transition: border-color 0.15s; -moz-appearance: textfield; }
+  .cost-item input[type=number]::-webkit-outer-spin-button,
+  .cost-item input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .cost-item input[type=number]:focus { border-color: var(--accent); }
+  .costs-total { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: var(--accent-light); border: 1px solid var(--accent); border-radius: 10px; margin-top: 4px; }
+  .costs-total .lbl { font-size: 13px; color: var(--accent-text); font-weight: 500; }
+  .costs-total .val { font-family: 'DM Mono', monospace; font-size: 15px; font-weight: 500; color: var(--accent); }
+  .results-grid { display: grid; gap: 8px; }
+  .result-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: var(--bg); border-radius: 10px; font-size: 13px; }
+  .result-row .lbl { color: var(--muted); }
+  .result-row .rval { font-family: 'DM Mono', monospace; font-weight: 500; font-size: 13px; color: var(--text); }
+  .result-main { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: var(--accent-light); border: 1px solid var(--accent); border-radius: 12px; margin-top: 4px; }
+  .result-main .lbl { font-size: 14px; font-weight: 500; color: var(--accent-text); }
+  .result-main .rval { font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 500; color: var(--accent); }
+  .reset-btn { font-size: 11px; color: var(--accent); background: none; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; text-decoration: underline; margin-left: 8px; }
+  .duration-row { display: flex; gap: 6px; }
+  .dur-btn { flex: 1; padding: 9px 8px; font-size: 12px; font-family: 'DM Sans', sans-serif; font-weight: 400; border: 1px solid var(--border); border-radius: 10px; background: transparent; color: var(--muted); cursor: pointer; transition: all 0.15s; text-align: center; }
+  .dur-btn:hover { border-color: var(--accent); color: var(--text); }
+  .dur-btn.active { background: var(--accent-light); border-color: var(--accent); color: var(--accent-text); font-weight: 500; }
+
+  /* Loss block */
+  .loss-card { background: var(--danger-light); border: 1px solid #E8AAAA; border-radius: 16px; padding: 1.5rem; margin-bottom: 1rem; display: none; }
+  .loss-card.visible { display: block; }
+  .loss-title { font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--danger); margin-bottom: 1rem; }
+  .loss-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .loss-item { background: #FBD5D5; border-radius: 10px; padding: 12px; }
+  .loss-item.warn-item { background: #FAE8CC; }
+  .loss-item.ok-item { background: #D5EAD9; }
+  .loss-item-label { font-size: 10px; color: var(--danger); margin-bottom: 6px; line-height: 1.4; }
+  .loss-item.warn-item .loss-item-label { color: var(--warn); }
+  .loss-item.ok-item .loss-item-label { color: var(--accent-text); }
+  .loss-item-val { font-family: 'DM Mono', monospace; font-size: 16px; font-weight: 500; color: var(--danger); }
+  .loss-item.warn-item .loss-item-val { color: var(--warn); }
+  .loss-item.ok-item .loss-item-val { color: var(--accent); }
+  .loss-hint { font-size: 11px; color: var(--danger); margin-top: 10px; line-height: 1.6; opacity: 0.8; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <h1>Калькулятор годин на проект</h1>
+    <p>Універсальний · вводь реальні витрати щомісяця</p>
+  </div>
+
+  <div class="card">
+    <p class="section-label">Тип проекту</p>
+    <div class="type-row">
+      <button class="type-btn active" onclick="setType('art')" id="btn-art">Тільки арт</button>
+      <button class="type-btn" onclick="setType('art_anim')" id="btn-art_anim">Арт + анімація</button>
+      <button class="type-btn" onclick="setType('anim')" id="btn-anim">Тільки анімація</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <p class="section-label">Параметри проекту</p>
+    <div class="slider-group">
+      <div class="slider-header"><label>Бюджет проекту</label><span class="val" id="budget-out">€8 000</span></div>
+      <input type="range" min="3000" max="30000" step="200" value="8000" id="budget" oninput="update()">
+    </div>
+    <div class="slider-group">
+      <div class="slider-header"><label>Курс EUR / UAH</label><span class="val" id="rate-out">51.4</span></div>
+      <input type="range" min="42" max="58" step="0.5" value="51.4" id="rate" oninput="update()">
+    </div>
+    <div class="slider-group">
+      <div class="slider-header"><label>Цільова маржа</label><span class="val" id="margin-out">30%</span></div>
+      <input type="range" min="10" max="60" step="1" value="30" id="margin" oninput="update()">
+    </div>
+    <div class="divider"></div>
+    <div class="slider-group">
+      <div class="slider-header"><label>Кількість проектів у місяці</label><span class="val" id="projects-out">5</span></div>
+      <input type="range" min="1" max="15" step="1" value="5" id="projects" oninput="update()">
+      <p class="projects-hint" id="projects-hint"></p>
+    </div>
+    <div class="divider"></div>
+    <p class="section-label" style="margin-bottom: 0.75rem;">Тривалість проекту</p>
+    <div class="duration-row">
+      <button class="dur-btn active" onclick="setDuration(1)" id="dur-1">1 місяць</button>
+      <button class="dur-btn" onclick="setDuration(2)" id="dur-2">2 місяці</button>
+      <button class="dur-btn" onclick="setDuration(3)" id="dur-3">3 місяці</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <p class="section-label">
+      Операційні витрати за місяць, грн
+      <button class="reset-btn" onclick="resetCosts()">↺ скинути до квітня</button>
+    </p>
+    <div class="costs-grid">
+      <div class="cost-item"><label>ЗП команди (без власників)</label><input type="number" id="c-salaries" value="773891" oninput="update()"></div>
+      <div class="cost-item"><label>Сервіси (Slack, Jira, Adobe...)</label><input type="number" id="c-services" value="28272" oninput="update()"></div>
+      <div class="cost-item"><label>ПМ + бухгалтери</label><input type="number" id="c-pm-buh" value="208801" oninput="update()"></div>
+      <div class="cost-item"><label>Нерегулярні витрати</label><input type="number" id="c-irregular" value="340394" oninput="update()"></div>
+    </div>
+    <div class="divider"></div>
+    <div class="costs-total">
+      <span class="lbl">Всього операційних витрат / міс</span>
+      <span class="val" id="c-total">—</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <p class="section-label">Результат</p>
+    <div class="results-grid">
+      <div class="result-row"><span class="lbl">Вартість проекту, грн</span><span class="rval" id="r-uah">—</span></div>
+      <div class="result-row"><span class="lbl">Overhead (1/<span id="r-proj-count">5</span> × <span id="r-months">1</span> міс)</span><span class="rval" id="r-overhead">—</span></div>
+      <div class="result-row"><span class="lbl">Залишається після маржі</span><span class="rval" id="r-after-margin">—</span></div>
+      <div class="result-row"><span class="lbl">Доступно на пряму ЗП</span><span class="rval" id="r-payroll">—</span></div>
+      <div class="result-row"><span class="lbl">Середня ставка команди</span><span class="rval" id="r-avgrate">—</span></div>
+      <div class="result-main">
+        <span class="lbl">Максимум годин на проект</span>
+        <span class="rval" id="r-hours">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loss block — показується тільки коли мінус -->
+  <div class="loss-card" id="loss-card">
+    <p class="loss-title">⚠ Проект збитковий при поточних параметрах</p>
+    <div class="loss-grid">
+      <div class="loss-item">
+        <p class="loss-item-label">Компанія втрачає</p>
+        <p class="loss-item-val" id="l-loss">—</p>
+      </div>
+      <div class="loss-item warn-item">
+        <p class="loss-item-label">Мін. ціна (вийти в 0)</p>
+        <p class="loss-item-val" id="l-min">—</p>
+      </div>
+      <div class="loss-item ok-item">
+        <p class="loss-item-label">Ціна з цільовою маржею</p>
+        <p class="loss-item-val" id="l-target">—</p>
+      </div>
+    </div>
+    <p class="loss-hint" id="l-hint"></p>
+  </div>
+
+</div>
+
+<script>
+let projectType = 'art';
+let duration = 1;
+
+const DEFAULTS = {
+  'c-salaries': 773891,
+  'c-services': 28272,
+  'c-pm-buh': 208801,
+  'c-irregular': 340394
+};
+
+function setType(t) {
+  projectType = t;
+  ['art','art_anim','anim'].forEach(x => {
+    document.getElementById('btn-' + x).classList.toggle('active', x === t);
+  });
+  update();
+}
+
+function setDuration(d) {
+  duration = d;
+  [1,2,3].forEach(x => {
+    document.getElementById('dur-' + x).classList.toggle('active', x === d);
+  });
+  update();
+}
+
+function resetCosts() {
+  Object.entries(DEFAULTS).forEach(([id, val]) => {
+    document.getElementById(id).value = val;
+  });
+  update();
+}
+
+function getNum(id) {
+  return parseFloat(document.getElementById(id).value) || 0;
+}
+
+function fmt(n) {
+  return Math.round(n).toLocaleString('uk-UA');
+}
+
+function update() {
+  const budget = +document.getElementById('budget').value;
+  const rate = +document.getElementById('rate').value;
+  const marginPct = +document.getElementById('margin').value;
+  const projects = +document.getElementById('projects').value;
+
+  document.getElementById('budget-out').textContent = '€' + fmt(budget);
+  document.getElementById('rate-out').textContent = rate.toFixed(1);
+  document.getElementById('margin-out').textContent = marginPct + '%';
+  document.getElementById('projects-out').textContent = projects;
+  document.getElementById('r-proj-count').textContent = projects;
+  document.getElementById('r-months').textContent = duration;
+
+  const totalPerMonth = getNum('c-salaries') + getNum('c-services') + getNum('c-pm-buh') + getNum('c-irregular');
+  document.getElementById('c-total').textContent = fmt(totalPerMonth) + ' грн';
+
+  const budgetUah = budget * rate;
+  const overheadShare = (totalPerMonth * duration) / projects;
+  const afterMargin = budgetUah * (1 - marginPct / 100);
+  const availableForPayroll = afterMargin - overheadShare;
+
+  document.getElementById('projects-hint').textContent =
+    'Overhead: ' + fmt(totalPerMonth) + ' × ' + duration + ' міс ÷ ' + projects + ' проектів = ' + fmt(overheadShare) + ' грн';
+
+  const avgRate = projectType === 'art' ? 315 : projectType === 'anim' ? 418 : 355;
+  const rateLabel = projectType === 'art' ? 'художники' : projectType === 'anim' ? 'аніматори' : 'мікс';
+  const hours = availableForPayroll > 0 ? Math.round(availableForPayroll / avgRate) : 0;
+
+  document.getElementById('r-uah').textContent = fmt(budgetUah) + ' грн';
+  document.getElementById('r-overhead').textContent = fmt(overheadShare) + ' грн';
+  document.getElementById('r-after-margin').textContent = fmt(afterMargin) + ' грн';
+  document.getElementById('r-payroll').textContent = availableForPayroll > 0
+    ? fmt(availableForPayroll) + ' грн'
+    : '⚠ збиток';
+  document.getElementById('r-avgrate').textContent = avgRate + ' грн/год (' + rateLabel + ')';
+
+  const hoursEl = document.getElementById('r-hours');
+  hoursEl.textContent = hours > 0 ? hours + ' год' : '0 год';
+  hoursEl.className = 'rval ' + (hours > 200 ? '' : hours > 100 ? 'warn' : 'danger');
+
+  // Loss block
+  const lossCard = document.getElementById('loss-card');
+  if (availableForPayroll <= 0) {
+    lossCard.classList.add('visible');
+
+    const loss = Math.abs(availableForPayroll);
+
+    // Мін ціна щоб вийти в 0: (overhead) / (1 - margin%) / rate
+    const minPriceUah = overheadShare / (1 - marginPct / 100);
+    const minPriceEur = minPriceUah / rate;
+
+    // Ціна з цільовою маржею: треба щоб після маржі вистачало на overhead + хоч трохи ЗП
+    // Мінімум: overhead покритий + 1 година команди
+    const targetPriceUah = (overheadShare + avgRate) / (1 - marginPct / 100);
+    const targetPriceEur = targetPriceUah / rate;
+
+    // Доплата від клієнта
+    const extraNeededEur = minPriceEur - budget;
+
+    document.getElementById('l-loss').textContent = fmt(loss) + ' грн';
+    document.getElementById('l-min').textContent = '€' + fmt(minPriceEur);
+    document.getElementById('l-target').textContent = '€' + fmt(targetPriceEur);
+    document.getElementById('l-hint').textContent =
+      'Щоб вийти в 0, потрібно попросити у клієнта доплату €' + fmt(extraNeededEur) +
+      '. Для виходу на ' + marginPct + '% маржі — €' + fmt(targetPriceEur - budget) + ' доплати.';
+  } else {
+    lossCard.classList.remove('visible');
+  }
+}
+
+update();
+</script>
+</body>
+</html>
