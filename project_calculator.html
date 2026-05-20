@@ -32,33 +32,16 @@
   input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%; background: var(--accent); cursor: pointer; border: 3px solid white; box-shadow: 0 0 0 1px var(--accent); }
   .divider { height: 1px; background: var(--border); margin: 1.25rem 0; }
   .projects-hint { font-size: 11px; color: var(--muted); margin-top: 6px; font-style: italic; }
-
-  /* Costs inputs */
   .costs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .cost-item { display: flex; flex-direction: column; gap: 5px; }
   .cost-item label { font-size: 11px; color: var(--muted); line-height: 1.3; }
-  .cost-item input[type=number] {
-    font-family: 'DM Mono', monospace;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text);
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 8px 10px;
-    outline: none;
-    width: 100%;
-    transition: border-color 0.15s;
-    -moz-appearance: textfield;
-  }
+  .cost-item input[type=number] { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; color: var(--text); background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; outline: none; width: 100%; transition: border-color 0.15s; -moz-appearance: textfield; }
   .cost-item input[type=number]::-webkit-outer-spin-button,
   .cost-item input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
   .cost-item input[type=number]:focus { border-color: var(--accent); }
   .costs-total { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: var(--accent-light); border: 1px solid var(--accent); border-radius: 10px; margin-top: 4px; }
   .costs-total .lbl { font-size: 13px; color: var(--accent-text); font-weight: 500; }
   .costs-total .val { font-family: 'DM Mono', monospace; font-size: 15px; font-weight: 500; color: var(--accent); }
-
-  /* Results */
   .results-grid { display: grid; gap: 8px; }
   .result-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; background: var(--bg); border-radius: 10px; font-size: 13px; }
   .result-row .lbl { color: var(--muted); }
@@ -68,8 +51,6 @@
   .result-main .rval { font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 500; color: var(--accent); }
   .result-main .rval.warn { color: var(--warn); }
   .result-main .rval.danger { color: var(--danger); }
-
-  .tag { display: inline-block; padding: 2px 8px; background: var(--tag-bg); border-radius: 20px; font-size: 11px; color: var(--muted); font-family: 'DM Mono', monospace; }
   .reset-btn { font-size: 11px; color: var(--accent); background: none; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; text-decoration: underline; margin-left: 8px; }
 </style>
 </head>
@@ -119,15 +100,13 @@
     </p>
     <div class="costs-grid">
       <div class="cost-item"><label>ЗП команди (без власників)</label><input type="number" id="c-salaries" value="773891" oninput="update()"></div>
-      <div class="cost-item"><label>ЗП Настя + Стас</label><input type="number" id="c-owners-salary" value="240000" oninput="update()"></div>
-      <div class="cost-item"><label>Дивіденди власників</label><input type="number" id="c-dividends" value="260000" oninput="update()"></div>
       <div class="cost-item"><label>Сервіси (Slack, Jira, Adobe...)</label><input type="number" id="c-services" value="28272" oninput="update()"></div>
       <div class="cost-item"><label>ПМ + бухгалтери</label><input type="number" id="c-pm-buh" value="208801" oninput="update()"></div>
       <div class="cost-item"><label>Нерегулярні витрати</label><input type="number" id="c-irregular" value="340394" oninput="update()"></div>
     </div>
     <div class="divider"></div>
     <div class="costs-total">
-      <span class="lbl">Всього витрат / міс (без ЗП власників)</span>
+      <span class="lbl">Всього операційних витрат / міс</span>
       <span class="val" id="c-total">—</span>
     </div>
   </div>
@@ -154,8 +133,6 @@ let projectType = 'art';
 
 const DEFAULTS = {
   'c-salaries': 773891,
-  'c-owners-salary': 240000,
-  'c-dividends': 260000,
   'c-services': 28272,
   'c-pm-buh': 208801,
   'c-irregular': 340394
@@ -196,22 +173,11 @@ function update() {
   document.getElementById('projects-out').textContent = projects;
   document.getElementById('r-proj-count').textContent = projects;
 
-  const salaries = getNum('c-salaries');
-  const ownersSalary = getNum('c-owners-salary');
-  const dividends = getNum('c-dividends');
-  const services = getNum('c-services');
-  const pmBuh = getNum('c-pm-buh');
-  const irregular = getNum('c-irregular');
-
-  // Total without owners salary+dividends (those are separate from operational overhead)
-  const totalFixed = salaries + services + pmBuh + irregular;
-  // For display: total without owners
-  const totalNoOwners = totalFixed;
-
-  document.getElementById('c-total').textContent = fmt(totalNoOwners) + ' грн';
+  const total = getNum('c-salaries') + getNum('c-services') + getNum('c-pm-buh') + getNum('c-irregular');
+  document.getElementById('c-total').textContent = fmt(total) + ' грн';
 
   const budgetUah = budget * rate;
-  const overheadShare = totalNoOwners / projects;
+  const overheadShare = total / projects;
   const afterMargin = budgetUah * (1 - marginPct / 100);
   const availableForPayroll = afterMargin - overheadShare;
 
