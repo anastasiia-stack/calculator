@@ -52,6 +52,11 @@
   .result-main .rval.warn { color: var(--warn); }
   .result-main .rval.danger { color: var(--danger); }
   .reset-btn { font-size: 11px; color: var(--accent); background: none; border: none; cursor: pointer; font-family: 'DM Sans', sans-serif; text-decoration: underline; margin-left: 8px; }
+
+  .duration-row { display: flex; gap: 6px; }
+  .dur-btn { flex: 1; padding: 9px 8px; font-size: 12px; font-family: 'DM Sans', sans-serif; font-weight: 400; border: 1px solid var(--border); border-radius: 10px; background: transparent; color: var(--muted); cursor: pointer; transition: all 0.15s; text-align: center; }
+  .dur-btn:hover { border-color: var(--accent); color: var(--text); }
+  .dur-btn.active { background: var(--accent-light); border-color: var(--accent); color: var(--accent-text); font-weight: 500; }
 </style>
 </head>
 <body>
@@ -75,7 +80,7 @@
     <p class="section-label">Параметри проекту</p>
     <div class="slider-group">
       <div class="slider-header"><label>Бюджет проекту</label><span class="val" id="budget-out">€8 000</span></div>
-      <input type="range" min="3000" max="20000" step="500" value="8000" id="budget" oninput="update()">
+      <input type="range" min="3000" max="30000" step="500" value="8000" id="budget" oninput="update()">
     </div>
     <div class="slider-group">
       <div class="slider-header"><label>Курс EUR / UAH</label><span class="val" id="rate-out">51.4</span></div>
@@ -90,6 +95,13 @@
       <div class="slider-header"><label>Кількість проектів у місяці</label><span class="val" id="projects-out">5</span></div>
       <input type="range" min="1" max="15" step="1" value="5" id="projects" oninput="update()">
       <p class="projects-hint" id="projects-hint"></p>
+    </div>
+    <div class="divider"></div>
+    <p class="section-label" style="margin-bottom: 0.75rem;">Тривалість проекту</p>
+    <div class="duration-row">
+      <button class="dur-btn active" onclick="setDuration(1)" id="dur-1">1 місяць</button>
+      <button class="dur-btn" onclick="setDuration(2)" id="dur-2">2 місяці × 2 overhead</button>
+      <button class="dur-btn" onclick="setDuration(3)" id="dur-3">3 місяці × 3 overhead</button>
     </div>
   </div>
 
@@ -115,7 +127,7 @@
     <p class="section-label">Результат</p>
     <div class="results-grid">
       <div class="result-row"><span class="lbl">Вартість проекту, грн</span><span class="rval" id="r-uah">—</span></div>
-      <div class="result-row"><span class="lbl">Overhead на цей проект (1/<span id="r-proj-count">5</span>)</span><span class="rval" id="r-overhead">—</span></div>
+      <div class="result-row"><span class="lbl">Overhead на цей проект (1/<span id="r-proj-count">5</span> × <span id="r-months">1</span> міс)</span><span class="rval" id="r-overhead">—</span></div>
       <div class="result-row"><span class="lbl">Залишається після маржі</span><span class="rval" id="r-after-margin">—</span></div>
       <div class="result-row"><span class="lbl">Доступно на пряму ЗП</span><span class="rval" id="r-payroll">—</span></div>
       <div class="result-row"><span class="lbl">Середня ставка команди</span><span class="rval" id="r-avgrate">—</span></div>
@@ -130,6 +142,7 @@
 
 <script>
 let projectType = 'art';
+let duration = 1;
 
 const DEFAULTS = {
   'c-salaries': 773891,
@@ -142,6 +155,14 @@ function setType(t) {
   projectType = t;
   ['art','art_anim','anim'].forEach(x => {
     document.getElementById('btn-' + x).classList.toggle('active', x === t);
+  });
+  update();
+}
+
+function setDuration(d) {
+  duration = d;
+  [1,2,3].forEach(x => {
+    document.getElementById('dur-' + x).classList.toggle('active', x === d);
   });
   update();
 }
@@ -172,17 +193,18 @@ function update() {
   document.getElementById('margin-out').textContent = marginPct + '%';
   document.getElementById('projects-out').textContent = projects;
   document.getElementById('r-proj-count').textContent = projects;
+  document.getElementById('r-months').textContent = duration;
 
-  const total = getNum('c-salaries') + getNum('c-services') + getNum('c-pm-buh') + getNum('c-irregular');
-  document.getElementById('c-total').textContent = fmt(total) + ' грн';
+  const totalPerMonth = getNum('c-salaries') + getNum('c-services') + getNum('c-pm-buh') + getNum('c-irregular');
+  document.getElementById('c-total').textContent = fmt(totalPerMonth) + ' грн';
 
   const budgetUah = budget * rate;
-  const overheadShare = total / projects;
+  const overheadShare = (totalPerMonth * duration) / projects;
   const afterMargin = budgetUah * (1 - marginPct / 100);
   const availableForPayroll = afterMargin - overheadShare;
 
   document.getElementById('projects-hint').textContent =
-    'Overhead ділиться на ' + projects + ' → ' + fmt(overheadShare) + ' грн на цей проект';
+    'Overhead: ' + fmt(totalPerMonth) + ' × ' + duration + ' міс ÷ ' + projects + ' проектів = ' + fmt(overheadShare) + ' грн';
 
   const avgRate = projectType === 'art' ? 315 : projectType === 'anim' ? 418 : 355;
   const rateLabel = projectType === 'art' ? 'художники' : projectType === 'anim' ? 'аніматори' : 'мікс';
