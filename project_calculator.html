@@ -208,9 +208,8 @@
 
       </p>
       <div class="costs-grid">
-        <div class="cost-item"><label>ЗП команди (без власників)</label><input type="number" id="c-salaries" value="773891" oninput="updatePlan()"></div>
+        <div class="cost-item"><label>ЗП всіх співробітників (команда + ПМ + бухгалтери)</label><input type="number" id="c-salaries" value="982692" oninput="updatePlan()"></div>
         <div class="cost-item"><label>Сервіси (Slack, Jira, Adobe...)</label><input type="number" id="c-services" value="28272" oninput="updatePlan()"></div>
-        <div class="cost-item"><label>ПМ + бухгалтери</label><input type="number" id="c-pm-buh" value="208801" oninput="updatePlan()"></div>
         <div class="cost-item"><label>Нерегулярні витрати</label><input type="number" id="c-irregular" value="340394" oninput="updatePlan()"></div>
       </div>
       <div class="divider"></div>
@@ -337,7 +336,10 @@
   <div class="tab-content" id="tab-buffer">
 
     <div class="card">
-      <p class="section-label">Параметри</p>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
+        <p class="section-label" style="margin-bottom:0;">Параметри</p>
+        <button onclick="resetBuffer()" style="font-size:11px; color:var(--muted); background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:5px 10px; cursor:pointer;">↺ Скинути</button>
+      </div>
       <div class="input-row" style="margin-bottom:8px">
         <div class="input-field">
           <label>Естімейт клієнту, год</label>
@@ -427,7 +429,7 @@ const LOSS_MARGIN = 13;
 const PROJECTS = 6.5;
 let planType = 'art';
 let analysisType = 'art';
-const DEFAULTS = { 'c-salaries': 773891, 'c-services': 28272, 'c-pm-buh': 208801, 'c-irregular': 340394 };
+const DEFAULTS = { 'c-salaries': 982692, 'c-services': 28272, 'c-irregular': 340394 };
 
 function switchTab(tab) {
   document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', ['plan','analysis','buffer'][i] === tab));
@@ -500,11 +502,11 @@ function getRateLabel(t) {
 }
 
 function getTotalCosts() {
-  return getNum('c-salaries') + getNum('c-services') + getNum('c-pm-buh') + getNum('c-irregular');
+  return getNum('c-salaries') + getNum('c-services') + getNum('c-irregular');
 }
 
 function getOverheadCosts() {
-  return getNum('c-services') + getNum('c-pm-buh') + getNum('c-irregular');
+  return getNum('c-services') + getNum('c-irregular');
 }
 
 function updatePlan() {
@@ -800,6 +802,18 @@ function runBuffer() {
     subEl.style.color = 'var(--accent-text)';
     subEl.textContent = 'Клієнту ' + estimate + ' год, команді ' + teamHours + ' год, подушка ' + cushionHours + ' год (7%). Маржа ' + fmtDec(actualMargin) + '%.';
   }
+}
+
+function resetBuffer() {
+  document.getElementById('buf-estimate').value = '';
+  document.getElementById('buf-budget').value = '';
+  document.getElementById('buf-rate').value = '51.4';
+  document.getElementById('buf-duration').value = '1.5';
+  document.getElementById('buf-margin').value = '35';
+  document.getElementById('buf-margin-out').textContent = '35%';
+  setBufClient('other');
+  setBufType('art');
+  document.getElementById('buffer-result').classList.remove('visible');
 }
 
 function updateBuffer() {
