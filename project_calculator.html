@@ -167,6 +167,13 @@
         <button class="type-btn" onclick="setType('art_anim')" id="btn-art_anim">Арт + анімація</button>
         <button class="type-btn" onclick="setType('anim')" id="btn-anim">Тільки анімація</button>
       </div>
+      <div id="mix-ratio-block" style="display:none; margin-top:1rem;">
+        <div class="slider-header">
+          <label style="font-size:12px; color:var(--muted);">Співвідношення арт / анімація</label>
+          <span class="val" style="font-size:13px;" id="mix-ratio-out">75% арт / 25% анім</span>
+        </div>
+        <input type="range" min="10" max="90" step="5" value="75" id="mix-ratio" oninput="updateMixLabel(); updatePlan();">
+      </div>
     </div>
 
     <div class="card">
@@ -216,7 +223,7 @@
       <p class="section-label">Результат</p>
       <div class="results-grid">
         <div class="result-row"><span class="lbl">Вартість проекту, грн</span><span class="rval" id="r-uah">—</span></div>
-        <div class="result-row"><span class="lbl">Overhead (1/6.5 × <span id="r-months">1</span> міс)</span><span class="rval" id="r-overhead">—</span></div>
+        <div class="result-row"><span class="lbl">Overhead без ЗП команди (1/6.5 × <span id="r-months">1</span> міс)</span><span class="rval" id="r-overhead">—</span></div>
         <div class="result-row"><span class="lbl">Залишається після маржі</span><span class="rval" id="r-after-margin">—</span></div>
         <div class="result-row"><span class="lbl">Доступно на пряму ЗП</span><span class="rval" id="r-payroll">—</span></div>
         <div class="result-row"><span class="lbl">Середня ставка команди</span><span class="rval" id="r-avgrate">—</span></div>
@@ -269,6 +276,13 @@
             <button class="type-btn active" onclick="setAnalysisType('art')" id="a-btn-art" style="font-size:11px;padding:7px 4px">Арт</button>
             <button class="type-btn" onclick="setAnalysisType('art_anim')" id="a-btn-art_anim" style="font-size:11px;padding:7px 4px">Арт+анім</button>
             <button class="type-btn" onclick="setAnalysisType('anim')" id="a-btn-anim" style="font-size:11px;padding:7px 4px">Анімація</button>
+          </div>
+          <div id="a-mix-ratio-block" style="display:none; margin-top:8px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+              <span style="font-size:10px;color:var(--muted);">Арт / Анімація</span>
+              <span style="font-size:10px;color:var(--text);font-family:DM Mono,monospace;" id="a-mix-ratio-out">75% / 25%</span>
+            </div>
+            <input type="range" min="10" max="90" step="5" value="75" id="a-mix-ratio" oninput="updateAMixLabel(); runAnalysis();">
           </div>
         </div>
       </div>
@@ -336,7 +350,13 @@ function switchTab(tab) {
 function setType(t) {
   planType = t;
   ['art','art_anim','anim'].forEach(x => document.getElementById('btn-' + x).classList.toggle('active', x === t));
+  document.getElementById('mix-ratio-block').style.display = t === 'art_anim' ? 'block' : 'none';
   updatePlan();
+}
+
+function updateMixLabel() {
+  const v = parseInt(document.getElementById('mix-ratio').value);
+  document.getElementById('mix-ratio-out').textContent = v + '% арт / ' + (100 - v) + '% анім';
 }
 
 
@@ -348,11 +368,30 @@ function resetCosts() {
 function getNum(id) { return parseFloat(document.getElementById(id).value) || 0; }
 function fmt(n) { return Math.round(n).toLocaleString('uk-UA'); }
 function fmtDec(n) { return parseFloat(n.toFixed(1)).toLocaleString('uk-UA'); }
-function getAvgRate(t) { return t === 'art' ? 315 : t === 'anim' ? 418 : 355; }
-function getRateLabel(t) { return t === 'art' ? 'художники' : t === 'anim' ? 'аніматори' : 'мікс'; }
+const RATE_ART = 360;
+const RATE_ANIM = 466;
+
+function getAvgRate(t) {
+  if (t === 'art') return RATE_ART;
+  if (t === 'anim') return RATE_ANIM;
+  const el = document.getElementById('mix-ratio');
+  const artPct = el ? parseInt(el.value) / 100 : 0.75;
+  return Math.round(RATE_ART * artPct + RATE_ANIM * (1 - artPct));
+}
+function getRateLabel(t) {
+  if (t === 'art') return 'художники';
+  if (t === 'anim') return 'аніматори';
+  const el = document.getElementById('mix-ratio');
+  const artPct = el ? parseInt(el.value) : 75;
+  return 'мікс ' + artPct + '/' + (100 - artPct);
+}
 
 function getTotalCosts() {
   return getNum('c-salaries') + getNum('c-services') + getNum('c-pm-buh') + getNum('c-irregular');
+}
+
+function getOverheadCosts() {
+  return getNum('c-services') + getNum('c-pm-buh') + getNum('c-irregular');
 }
 
 function updatePlan() {
@@ -370,7 +409,7 @@ function updatePlan() {
   document.getElementById('c-total').textContent = fmt(totalPerMonth) + ' грн';
 
   const budgetUah = budget * rate;
-  const overheadShare = (totalPerMonth * duration) / PROJECTS;
+  const overheadShare = (getOverheadCosts() * duration) / PROJECTS;
   const afterMargin = budgetUah * (1 - marginPct / 100);
   const availableForPayroll = afterMargin - overheadShare;
   const avgRate = getAvgRate(planType);
@@ -412,7 +451,21 @@ function updatePlan() {
 function setAnalysisType(t) {
   analysisType = t;
   ['art','art_anim','anim'].forEach(x => document.getElementById('a-btn-' + x).classList.toggle('active', x === t));
+  document.getElementById('a-mix-ratio-block').style.display = t === 'art_anim' ? 'block' : 'none';
   runAnalysis();
+}
+
+function updateAMixLabel() {
+  const v = parseInt(document.getElementById('a-mix-ratio').value);
+  document.getElementById('a-mix-ratio-out').textContent = v + '% / ' + (100 - v) + '%';
+}
+
+function getAnalysisAvgRate() {
+  if (analysisType === 'art') return RATE_ART;
+  if (analysisType === 'anim') return RATE_ANIM;
+  const el = document.getElementById('a-mix-ratio');
+  const artPct = el ? parseInt(el.value) / 100 : 0.75;
+  return Math.round(RATE_ART * artPct + RATE_ANIM * (1 - artPct));
 }
 
 function runAnalysis() {
@@ -424,10 +477,10 @@ function runAnalysis() {
   const dur = parseFloat(document.getElementById('a-duration').value) || 1;
 
   const budgetUah = budget * rate;
-  const avgRate = getAvgRate(analysisType);
+  const avgRate = getAnalysisAvgRate();
   const actualPayroll = hours * avgRate;
   const totalPerMonth = getTotalCosts();
-  const overhead = (totalPerMonth * dur) / PROJECTS;
+  const overhead = (getOverheadCosts() * dur) / PROJECTS;
   const totalCosts = actualPayroll + overhead;
   const profit = budgetUah - totalCosts;
   const marginPct = (profit / budgetUah) * 100;
