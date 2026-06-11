@@ -155,6 +155,7 @@
   <div class="tabs">
     <button class="tab active" onclick="switchTab('plan')">📐 Планування</button>
     <button class="tab" onclick="switchTab('analysis')">📊 Аналіз проекту</button>
+    <button class="tab" onclick="switchTab('buffer')">🛡 Подушка</button>
   </div>
 
   <!-- ===== TAB 1: PLANNING ===== -->
@@ -232,6 +233,22 @@
           <span class="rval" id="r-hours">—</span>
         </div>
       </div>
+      <div id="buffer-block" style="display:none; margin-top:1rem;">
+        <div class="divider"></div>
+        <p class="section-label" style="margin-bottom:0.75rem;">Розподіл годин</p>
+        <div class="slider-group" style="margin-bottom:1rem;">
+          <div class="slider-header">
+            <label style="font-size:13px;color:var(--muted);">Подушка</label>
+            <span class="val" style="font-size:13px;" id="buffer-pct-out">10%</span>
+          </div>
+          <input type="range" min="8" max="12" step="1" value="10" id="buffer-pct" oninput="updateBuffer()">
+        </div>
+        <div class="results-grid">
+          <div class="result-row"><span class="lbl">Клієнту (SOW)</span><span class="rval" id="r-client-hours">—</span></div>
+          <div class="result-row" style="background:var(--warn-light);"><span class="lbl" style="color:var(--warn);">Подушка</span><span class="rval" style="color:var(--warn);" id="r-buffer-hours">—</span></div>
+          <div class="result-main good" style="margin-top:0;"><span class="lbl">Команді (внутрішній SOW)</span><span class="rval" id="r-team-hours">—</span></div>
+        </div>
+      </div>
     </div>
 
     <div class="loss-card" id="loss-card">
@@ -278,7 +295,7 @@
             <button class="type-btn" onclick="setAnalysisType('anim')" id="a-btn-anim" style="font-size:11px;padding:7px 4px">Анімація</button>
           </div>
           <div id="a-mix-ratio-block" style="display:none; margin-top:8px;">
-            <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+            <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
               <span style="font-size:10px;color:var(--muted);">Арт / Анімація</span>
               <span style="font-size:10px;color:var(--text);font-family:DM Mono,monospace;" id="a-mix-ratio-out">75% / 25%</span>
             </div>
@@ -331,6 +348,92 @@
 
   </div>
 
+  <!-- ===== TAB 3: BUFFER ===== -->
+  <div class="tab-content" id="tab-buffer">
+
+    <div class="card">
+      <p class="section-label">Параметри</p>
+      <div class="input-row" style="margin-bottom:8px">
+        <div class="input-field">
+          <label>Естімейт клієнту, год</label>
+          <input type="number" id="buf-estimate" placeholder="400" oninput="runBuffer()">
+        </div>
+        <div class="input-field">
+          <label>Курс EUR/UAH</label>
+          <input type="number" id="buf-rate" value="51.4" oninput="runBuffer()">
+        </div>
+      </div>
+      <div class="input-row" style="margin-bottom:8px">
+        <div class="input-field">
+          <label>Бюджет проекту, €</label>
+          <input type="number" id="buf-budget" placeholder="9500" oninput="runBuffer()">
+        </div>
+        <div class="input-field">
+          <label>Тривалість, міс</label>
+          <input type="number" id="buf-duration" value="1.5" step="0.5" oninput="runBuffer()">
+        </div>
+      </div>
+      <div style="margin-bottom:8px">
+        <p class="section-label" style="margin-bottom:8px;">Клієнт</p>
+        <div class="type-row">
+          <button class="type-btn active" onclick="setBufClient('other')" id="buf-btn-other">Інший</button>
+          <button class="type-btn" onclick="setBufClient('ela')" id="buf-btn-ela">Ela Games</button>
+          <button class="type-btn" onclick="setBufClient('elk')" id="buf-btn-elk">Elk Studio</button>
+          <button class="type-btn" onclick="setBufClient('all41')" id="buf-btn-all41">All41</button>
+        </div>
+      </div>
+      <div class="slider-group" style="margin-bottom:0">
+        <div class="slider-header">
+          <label>Цільова маржа</label>
+          <span class="val" id="buf-margin-out">30%</span>
+        </div>
+        <input type="range" min="10" max="60" step="1" value="30" id="buf-margin" oninput="runBuffer()">
+      </div>
+      <div style="margin-top:8px">
+        <p class="section-label" style="margin-bottom:8px;">Тип проекту</p>
+        <div class="type-row">
+          <button class="type-btn active" onclick="setBufType('art')" id="buf-btn-art">Тільки арт</button>
+          <button class="type-btn" onclick="setBufType('art_anim')" id="buf-btn-art_anim">Арт + анімація</button>
+          <button class="type-btn" onclick="setBufType('anim')" id="buf-btn-anim">Тільки анімація</button>
+        </div>
+        <div id="buf-mix-block" style="display:none; margin-top:10px;">
+          <div class="slider-header">
+            <label style="font-size:12px;color:var(--muted);">Співвідношення арт / анімація</label>
+            <span class="val" style="font-size:13px;" id="buf-mix-out">75% арт / 25% анім</span>
+          </div>
+          <input type="range" min="10" max="90" step="5" value="75" id="buf-mix" oninput="updateBufMix(); runBuffer();">
+        </div>
+      </div>
+    </div>
+
+    <div class="analysis-result" id="buffer-result">
+
+      <div class="card">
+        <p class="section-label">Результат</p>
+        <div class="results-grid">
+          <div class="result-row"><span class="lbl">Максимум годин при цій маржі</span><span class="rval" id="buf-max-hours">—</span></div>
+          <div class="result-row"><span class="lbl">Подушка, год</span><span class="rval" id="buf-cushion-h">—</span></div>
+          <div class="result-row"><span class="lbl">Подушка, %</span><span class="rval" id="buf-cushion-pct">—</span></div>
+          <div class="result-row"><span class="lbl">Команді (внутрішній SOW)</span><span class="rval" id="buf-team-hours">—</span></div>
+        </div>
+
+        <div id="buf-status" style="margin-top:12px; border-radius:12px; padding:14px 16px; display:none;">
+          <p id="buf-status-title" style="font-size:14px; font-weight:500; margin-bottom:6px;"></p>
+          <p id="buf-status-sub" style="font-size:12px; line-height:1.6;"></p>
+        </div>
+
+        <div style="margin-top:12px; padding:12px; background:var(--bg); border-radius:10px;">
+          <p style="font-size:11px; color:var(--muted); line-height:1.7;">
+            💡 <strong>Як вибрати маржу:</strong> якщо проект стандартний — став максимальну допустиму маржу для цього клієнта, подушка буде меншою але достатньою. Якщо проект складний або клієнт примхливий — знижуй маржу в рамках допустимого, подушка збільшиться.
+          </p>
+          <div id="buf-client-hint" style="margin-top:8px; font-size:11px; color:var(--accent); font-weight:500;"></div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
 </div>
 
 <script>
@@ -342,7 +445,7 @@ let analysisType = 'art';
 const DEFAULTS = { 'c-salaries': 773891, 'c-services': 28272, 'c-pm-buh': 208801, 'c-irregular': 340394 };
 
 function switchTab(tab) {
-  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', ['plan','analysis'][i] === tab));
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', ['plan','analysis','buffer'][i] === tab));
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
   document.getElementById('tab-' + tab).classList.add('active');
 }
@@ -426,9 +529,12 @@ function updatePlan() {
   if (hours > 0) {
     hoursEl.textContent = hours + ' год';
     rMain.className = 'result-main good';
+    document.getElementById('buffer-block').style.display = 'block';
+    updateBuffer();
   } else {
     hoursEl.textContent = '0 год';
     rMain.className = 'result-main bad';
+    document.getElementById('buffer-block').style.display = 'none';
   }
 
   const lossCard = document.getElementById('loss-card');
@@ -550,6 +656,132 @@ function runAnalysis() {
 }
 
 updatePlan();
+
+let bufClient = 'other';
+let bufType = 'art';
+
+const CLIENT_MARGINS = {
+  'other':  { min: 35, label: 'Інші клієнти: мін. маржа 35%, цільова 40%' },
+  'ela':    { min: 40, label: 'Ela Games: мін. маржа 40%, цільова 50%+' },
+  'elk':    { min: 45, label: 'Elk Studio: мін. маржа 45%, цільова 50%+' },
+  'all41':  { min: 40, label: 'All41: мін. маржа 40%, цільова 45%+' },
+};
+
+function setBufClient(c) {
+  bufClient = c;
+  ['other','ela','elk','all41'].forEach(x => document.getElementById('buf-btn-' + x).classList.toggle('active', x === c));
+  // Set margin slider to client minimum
+  const minM = CLIENT_MARGINS[c].min;
+  const slider = document.getElementById('buf-margin');
+  if (parseInt(slider.value) < minM) slider.value = minM;
+  document.getElementById('buf-client-hint').textContent = CLIENT_MARGINS[c].label;
+  runBuffer();
+}
+
+function setBufType(t) {
+  bufType = t;
+  ['art','art_anim','anim'].forEach(x => document.getElementById('buf-btn-' + x).classList.toggle('active', x === t));
+  document.getElementById('buf-mix-block').style.display = t === 'art_anim' ? 'block' : 'none';
+  runBuffer();
+}
+
+function updateBufMix() {
+  const v = parseInt(document.getElementById('buf-mix').value);
+  document.getElementById('buf-mix-out').textContent = v + '% арт / ' + (100 - v) + '% анім';
+}
+
+function getBufAvgRate() {
+  if (bufType === 'art') return RATE_ART;
+  if (bufType === 'anim') return RATE_ANIM;
+  const el = document.getElementById('buf-mix');
+  const artPct = el ? parseInt(el.value) / 100 : 0.75;
+  return Math.round(RATE_ART * artPct + RATE_ANIM * (1 - artPct));
+}
+
+function runBuffer() {
+  const estimate = parseFloat(document.getElementById('buf-estimate').value);
+  const budget = parseFloat(document.getElementById('buf-budget').value);
+  const rate = parseFloat(document.getElementById('buf-rate').value) || 51.4;
+  const dur = parseFloat(document.getElementById('buf-duration').value) || 1.5;
+  const marginPct = parseInt(document.getElementById('buf-margin').value);
+  document.getElementById('buf-margin-out').textContent = marginPct + '%';
+
+  if (!estimate || !budget) {
+    document.getElementById('buffer-result').classList.remove('visible');
+    return;
+  }
+
+  const budgetUah = budget * rate;
+  const overhead = (getOverheadCosts() * dur) / PROJECTS;
+  const afterMargin = budgetUah * (1 - marginPct / 100);
+  const availableForPayroll = afterMargin - overhead;
+  const avgRate = getBufAvgRate();
+  const maxHours = availableForPayroll > 0 ? Math.round(availableForPayroll / avgRate) : 0;
+  const cushion = maxHours - estimate;
+  const cushionPct = estimate > 0 ? (cushion / estimate * 100) : 0;
+  const teamHours = estimate - Math.round(estimate * cushionPct / 100);
+
+  document.getElementById('buffer-result').classList.add('visible');
+  document.getElementById('buf-max-hours').textContent = maxHours > 0 ? maxHours + ' год' : '⚠ збиток';
+  document.getElementById('buf-cushion-h').textContent = cushion > 0 ? cushion + ' год' : '⚠ ' + Math.abs(cushion) + ' год нестача';
+  document.getElementById('buf-cushion-pct').textContent = cushionPct > 0 ? fmtDec(cushionPct) + '%' : '⚠ нестача';
+  document.getElementById('buf-team-hours').textContent = cushion > 0 ? estimate + ' год' : '—';
+
+  // Status
+  const statusEl = document.getElementById('buf-status');
+  const titleEl = document.getElementById('buf-status-title');
+  const subEl = document.getElementById('buf-status-sub');
+  const minMargin = CLIENT_MARGINS[bufClient].min;
+  statusEl.style.display = 'block';
+
+  if (cushion <= 0) {
+    statusEl.style.background = 'var(--danger-light)';
+    statusEl.style.border = '1px solid #E8AAAA';
+    titleEl.style.color = 'var(--danger)';
+    titleEl.textContent = '❌ Естімейт перевищує максимум';
+    subEl.style.color = 'var(--danger)';
+    subEl.textContent = 'Годин не вистачає. Зменши естімейт клієнту або переглянь бюджет.';
+  } else if (cushionPct < 6) {
+    statusEl.style.background = 'var(--danger-light)';
+    statusEl.style.border = '1px solid #E8AAAA';
+    titleEl.style.color = 'var(--danger)';
+    titleEl.textContent = '⚠️ Подушка замала (менше 6%)';
+    subEl.style.color = 'var(--danger)';
+    const suggested = Math.max(marginPct - 3, minMargin);
+    if (marginPct > minMargin) {
+      subEl.textContent = 'Спробуй знизити маржу на 2–3% (до ' + suggested + '%) і перевір подушку. Ціль: 6–8% (' + Math.round(estimate * 0.06) + '–' + Math.round(estimate * 0.08) + ' год). Мінімум для цього клієнта: ' + minMargin + '%.';
+    } else {
+      subEl.textContent = 'Ти вже на мінімальній маржі для цього клієнта (' + minMargin + '%). Розглянь зменшення естімейту клієнту або перегляд бюджету. Ціль подушки: ' + Math.round(estimate * 0.06) + '–' + Math.round(estimate * 0.08) + ' год.';
+    }
+  } else if (cushionPct <= 8) {
+    statusEl.style.background = 'var(--accent-light)';
+    statusEl.style.border = '1px solid var(--accent)';
+    titleEl.style.color = 'var(--accent-text)';
+    titleEl.textContent = '✅ Подушка в нормі (6–8%)';
+    subEl.style.color = 'var(--accent-text)';
+    subEl.textContent = 'Оптимальний розподіл. Клієнту ' + estimate + ' год, подушка ' + cushion + ' год.';
+  } else {
+    statusEl.style.background = 'var(--warn-light)';
+    statusEl.style.border = '1px solid #D4A96A';
+    titleEl.style.color = 'var(--warn)';
+    titleEl.textContent = '📈 Подушка більше 8% — є запас';
+    subEl.style.color = 'var(--warn)';
+    subEl.textContent = 'Можна підвищити маржу і залишатись в нормі. Спробуй ' + Math.min(marginPct + 2, 60) + '% — подушка зменшиться але залишиться достатньою.';
+  }
+}
+
+function updateBuffer() {
+  const pct = parseInt(document.getElementById('buffer-pct').value);
+  document.getElementById('buffer-pct-out').textContent = pct + '%';
+  const hours = parseInt(document.getElementById('r-hours').textContent) || 0;
+  if (hours > 0) {
+    const buffer = Math.round(hours * pct / 100);
+    const team = hours - buffer;
+    document.getElementById('r-client-hours').textContent = hours + ' год';
+    document.getElementById('r-buffer-hours').textContent = buffer + ' год (' + pct + '%)';
+    document.getElementById('r-team-hours').textContent = team + ' год';
+  }
+}
 </script>
 </body>
 </html>
