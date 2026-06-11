@@ -233,22 +233,7 @@
           <span class="rval" id="r-hours">—</span>
         </div>
       </div>
-      <div id="buffer-block" style="display:none; margin-top:1rem;">
-        <div class="divider"></div>
-        <p class="section-label" style="margin-bottom:0.75rem;">Розподіл годин</p>
-        <div class="slider-group" style="margin-bottom:1rem;">
-          <div class="slider-header">
-            <label style="font-size:13px;color:var(--muted);">Подушка</label>
-            <span class="val" style="font-size:13px;" id="buffer-pct-out">10%</span>
-          </div>
-          <input type="range" min="8" max="12" step="1" value="10" id="buffer-pct" oninput="updateBuffer()">
-        </div>
-        <div class="results-grid">
-          <div class="result-row"><span class="lbl">Клієнту (SOW)</span><span class="rval" id="r-client-hours">—</span></div>
-          <div class="result-row" style="background:var(--warn-light);"><span class="lbl" style="color:var(--warn);">Подушка</span><span class="rval" style="color:var(--warn);" id="r-buffer-hours">—</span></div>
-          <div class="result-main good" style="margin-top:0;"><span class="lbl">Команді (внутрішній SOW)</span><span class="rval" id="r-team-hours">—</span></div>
-        </div>
-      </div>
+
     </div>
 
     <div class="loss-card" id="loss-card">
@@ -529,12 +514,11 @@ function updatePlan() {
   if (hours > 0) {
     hoursEl.textContent = hours + ' год';
     rMain.className = 'result-main good';
-    document.getElementById('buffer-block').style.display = 'block';
-    updateBuffer();
+
   } else {
     hoursEl.textContent = '0 год';
     rMain.className = 'result-main bad';
-    document.getElementById('buffer-block').style.display = 'none';
+
   }
 
   const lossCard = document.getElementById('loss-card');
