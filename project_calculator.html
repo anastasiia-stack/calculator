@@ -543,7 +543,6 @@ function updatePlan() {
   document.getElementById('rate-out').textContent = rate.toFixed(1);
   document.getElementById('margin-out').textContent = marginPct + '%';
   const duration = parseFloat(document.getElementById('p-duration').value) || 1;
-  document.getElementById('r-months').textContent = duration;
 
   const totalPerMonth = getTotalCosts();
   document.getElementById('c-total').textContent = fmt(totalPerMonth) + ' грн';
@@ -555,9 +554,7 @@ function updatePlan() {
   const avgRate = getAvgRate(planType);
   const hours = availableForPayroll > 0 ? Math.round(availableForPayroll / avgRate) : 0;
 
-  document.getElementById('r-uah').textContent = fmt(budgetUah) + ' грн';
-  const budgetUah = budget * rate;
-  const profitUah = Math.round(budgetUah * (margin / 100));
+  const profitUah = Math.round(budgetUah * (marginPct / 100));
   const profitEur = Math.round(profitUah / rate);
   document.getElementById('r-profit').textContent = fmt(profitUah) + ' грн / €' + fmt(profitEur);
   document.getElementById('r-avgrate').textContent = avgRate + ' грн/год (' + getRateLabel(planType) + ')';
