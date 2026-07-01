@@ -161,6 +161,15 @@
   <!-- ===== TAB 1: PLANNING ===== -->
   <div class="tab-content active" id="tab-plan">
 
+    <div class="card" style="background:#EBF5F0; border:1.5px solid #2D6A4F;">
+      <p style="font-size:11px; font-weight:700; color:#2D6A4F; margin-bottom:8px; letter-spacing:0.06em; text-transform:uppercase;">💡 Важливо перед початком</p>
+      <p style="font-size:13px; color:#1A1A1A; line-height:1.75; margin:0;">
+        <strong>Години для клієнту ≠ Години для команди.</strong><br>
+        Клієнт платить ~€28–30 за годину — в цю ціну вже закладено маржу студії, overhead і дивіденди власників. Команда отримує свою ставку (360–466 грн/год), яка значно менша.<br><br>
+        Тому <strong>не ставте команді той самий естімейт що і клієнту</strong> — команда не встигне. Для внутрішнього SOW команди використовуй <strong>максимум годин з цього калькулятора</strong>.
+      </p>
+    </div>
+
     <div class="card">
       <p class="section-label">Тип проекту</p>
       <div class="type-row">
@@ -231,6 +240,7 @@
           <span class="lbl">Максимум годин на проект</span>
           <span class="rval" id="r-hours">—</span>
         </div>
+        <div id="r-margin-hint" style="display:none; margin-top:10px; padding:10px 14px; border-radius:10px; font-size:12px; line-height:1.6;"></div>
       </div>
 
     </div>
@@ -249,6 +259,14 @@
 
   <!-- ===== TAB 2: ANALYSIS ===== -->
   <div class="tab-content" id="tab-analysis">
+
+    <div class="card" style="background:#F5F5F5; border:1.5px solid #CCCCCC;">
+      <p style="font-size:11px; font-weight:700; color:#555555; margin-bottom:8px; letter-spacing:0.06em; text-transform:uppercase;">Для чого цей розділ</p>
+      <p style="font-size:13px; color:#1A1A1A; line-height:1.75; margin:0;">
+        Використовуй цю вкладку щоб перевірити рентабельність вже завершеного або старого проекту — наприклад, якщо він рахувався давно або без калькулятора і ти хочеш зрозуміти, наскільки він був прибутковим для студії.<br><br>
+        Введи фактичну вартість проекту, реальні відпрацьовані години (з Jira), курс і тривалість — і калькулятор покаже фактичну маржинальність.
+      </p>
+    </div>
 
     <div class="card">
       <p class="section-label">Параметри проекту</p>
@@ -334,6 +352,15 @@
 
   <!-- ===== TAB 3: BUFFER ===== -->
   <div class="tab-content" id="tab-buffer">
+
+    <div class="card" style="background:#F5F5F5; border:1.5px solid #CCCCCC;">
+      <p style="font-size:11px; font-weight:700; color:#555555; margin-bottom:8px; letter-spacing:0.06em; text-transform:uppercase;">Для чого цей розділ</p>
+      <p style="font-size:13px; color:#1A1A1A; line-height:1.75; margin:0;">
+        Цей розділ допомагає визначити <strong>подушку</strong> — різницю між годинами, які ми поставили клієнту, і годинами, які отримує команда для розробки.<br><br>
+        Подушка формується на основі бюджету проекту, маржі та реальних операційних витрат студії — тому її завжди треба брати звідси, а не рахувати вручну. Це гарантує що студія залишається прибутковою і у команди є реальний запас часу на правки та непередбачені ситуації.<br><br>
+        <strong>Подушку завжди беремо з цього калькулятора.</strong>
+      </p>
+    </div>
 
     <div class="card">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
@@ -538,14 +565,25 @@ function updatePlan() {
 
   const rMain = document.getElementById('r-main');
   const hoursEl = document.getElementById('r-hours');
+  const hintEl = document.getElementById('r-margin-hint');
   if (hours > 0) {
     hoursEl.textContent = hours + ' год';
     rMain.className = 'result-main good';
-
+    hintEl.style.display = 'block';
+    hintEl.style.background = '#F5F5F5';
+    hintEl.style.border = '1px solid #CCCCCC';
+    hintEl.style.color = '#555555';
+    if (hours > 600) {
+      hintEl.innerHTML = '💡 Якщо для цього проекту стільки годин не потрібно — підніми цільову маржу на 5–10%. Компанія заробить більше: реального часу потрібно менше, а різниця йде в прибуток студії.<br><br>Після того як визначиш естімейт клієнту — перейди у вкладку <strong>«Подушка»</strong>, щоб побачити скільки годин ставити команді.';
+    } else if (hours < 200) {
+      hintEl.innerHTML = '💡 Якщо годин не вистачає — спробуй знизити маржу на 5% або переглянь бюджет з клієнтом.<br><br>Після того як визначиш естімейт клієнту — перейди у вкладку <strong>«Подушка»</strong>, щоб побачити скільки годин ставити команді.';
+    } else {
+      hintEl.innerHTML = '💡 Після того як визначиш естімейт клієнту — перейди у вкладку <strong>«Подушка»</strong>, щоб побачити скільки годин ставити команді.';
+    }
   } else {
     hoursEl.textContent = '0 год';
     rMain.className = 'result-main bad';
-
+    hintEl.style.display = 'none';
   }
 
   const lossCard = document.getElementById('loss-card');
@@ -672,10 +710,10 @@ let bufClient = 'other';
 let bufType = 'art';
 
 const CLIENT_MARGINS = {
-  'other':  { min: 35, label: 'Інші клієнти: мін. маржа 35%, цільова 40%' },
-  'ela':    { min: 40, label: 'Ela Games: мін. маржа 40%, цільова 50%+' },
-  'elk':    { min: 45, label: 'Elk Studio: мін. маржа 45%, цільова 50%+' },
-  'all41':  { min: 40, label: 'All41: мін. маржа 40%, цільова 45%+' },
+  'other':  { min: 40, label: 'Інші клієнти: мін. маржа 40%, цільова 45%' },
+  'ela':    { min: 45, label: 'Ela Games: мін. маржа 45%, цільова 55%+' },
+  'elk':    { min: 50, label: 'Elk Studio: мін. маржа 50%, цільова 55%+' },
+  'all41':  { min: 45, label: 'All41: мін. маржа 45%, цільова 50%+' },
 };
 
 function setBufClient(c) {
