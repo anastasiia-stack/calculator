@@ -909,5 +909,64 @@ function loadFromURL() {
 }
 loadFromURL();
 </script>
+
+<style>
+#pw-overlay {
+  position: fixed; inset: 0; background: var(--bg, #F5F0E8);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9999;
+}
+#pw-box {
+  background: white; border-radius: 16px; padding: 40px 32px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08); width: 320px; text-align: center;
+}
+#pw-logo { font-size: 28px; font-weight: 700; color: #2D6A4F; margin-bottom: 8px; }
+#pw-sub { font-size: 13px; color: #888; margin-bottom: 24px; }
+#pw-input {
+  width: 100%; padding: 12px 14px; border: 1.5px solid #DDD;
+  border-radius: 10px; font-size: 15px; outline: none;
+  box-sizing: border-box; text-align: center; letter-spacing: 2px;
+  font-family: DM Mono, monospace;
+}
+#pw-input:focus { border-color: #2D6A4F; }
+#pw-btn {
+  margin-top: 12px; width: 100%; padding: 12px;
+  background: #2D6A4F; color: white; border: none;
+  border-radius: 10px; font-size: 14px; font-weight: 600;
+  cursor: pointer;
+}
+#pw-btn:hover { background: #245A42; }
+#pw-error { color: #C0392B; font-size: 12px; margin-top: 8px; display: none; }
+</style>
+<div id="pw-overlay">
+  <div id="pw-box">
+    <div id="pw-logo">PicShot Studio</div>
+    <div id="pw-sub">Калькулятор проектів · Введіть пароль</div>
+    <input type="password" id="pw-input" placeholder="••••••••••••" onkeydown="if(event.key==='Enter')checkPw()">
+    <button id="pw-btn" onclick="checkPw()">Увійти</button>
+    <div id="pw-error">Невірний пароль</div>
+  </div>
+</div>
+<script>
+(function() {
+  var PASS = 'ilovepicshot';
+  var KEY = 'ps_auth';
+  if (sessionStorage.getItem(KEY) === '1') {
+    document.getElementById('pw-overlay').style.display = 'none';
+  }
+  window.checkPw = function() {
+    var val = document.getElementById('pw-input').value;
+    if (val === PASS) {
+      sessionStorage.setItem(KEY, '1');
+      document.getElementById('pw-overlay').style.display = 'none';
+    } else {
+      var err = document.getElementById('pw-error');
+      err.style.display = 'block';
+      document.getElementById('pw-input').value = '';
+      setTimeout(function(){ err.style.display = 'none'; }, 2000);
+    }
+  };
+})();
+</script>
 </body>
 </html>
