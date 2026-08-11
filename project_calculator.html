@@ -238,6 +238,10 @@
           <span class="rval" id="r-hours">—</span>
         </div>
         <div id="r-margin-hint" style="display:none; margin-top:10px; padding:10px 14px; border-radius:10px; font-size:12px; line-height:1.6;"></div>
+        <button onclick="shareCalc()" id="share-btn" style="display:none; margin-top:12px; width:100%; padding:10px; background:var(--bg); border:1px solid var(--border); border-radius:10px; font-size:13px; color:var(--text); cursor:pointer;">
+          🔗 Поділитися розрахунком
+        </button>
+        <div id="share-copied" style="display:none; margin-top:6px; text-align:center; font-size:12px; color:var(--accent);">✅ Посилання скопійовано!</div>
       </div>
 
     </div>
@@ -565,6 +569,7 @@ function updatePlan() {
   if (hours > 0) {
     hoursEl.textContent = hours + ' год';
     rMain.className = 'result-main good';
+    document.getElementById('share-btn').style.display = 'block';
     hintEl.style.display = 'block';
     hintEl.style.background = '#F5F5F5';
     hintEl.style.border = '1px solid #CCCCCC';
@@ -579,6 +584,7 @@ function updatePlan() {
   } else {
     hoursEl.textContent = '0 год';
     rMain.className = 'result-main bad';
+    document.getElementById('share-btn').style.display = 'none';
     hintEl.style.display = 'none';
   }
 
@@ -706,19 +712,20 @@ let bufClient = 'other';
 let bufType = 'art';
 
 const CLIENT_MARGINS = {
-  'other':  { min: 40, label: 'Інші клієнти: мін. маржа 40%, цільова 45%' },
-  'ela':    { min: 45, label: 'Ela Games: мін. маржа 45%, цільова 55%+' },
-  'elk':    { min: 50, label: 'Elk Studio: мін. маржа 50%, цільова 55%+' },
-  'all41':  { min: 45, label: 'All41: мін. маржа 45%, цільова 50%+' },
+  'other':  { min: 23, target: 40, label: 'Інші клієнти: цільова 40% | мін. беззбитковість 23%' },
+  'ela':    { min: 23, target: 50, label: 'Ela Games: цільова 50%+ | мін. беззбитковість 23%' },
+  'elk':    { min: 23, target: 50, label: 'Elk Studio: цільова 50%+ | мін. беззбитковість 23%' },
+  'all41':  { min: 23, target: 45, label: 'All41: цільова 45%+ | мін. беззбитковість 23%' },
 };
 
 function setBufClient(c) {
   bufClient = c;
   ['other','ela','elk','all41'].forEach(x => document.getElementById('buf-btn-' + x).classList.toggle('active', x === c));
   // Set margin slider to client minimum
-  const minM = CLIENT_MARGINS[c].min;
+  const targetM = CLIENT_MARGINS[c].target;
   const slider = document.getElementById('buf-margin');
-  if (parseInt(slider.value) < minM) slider.value = minM;
+  if (parseInt(slider.value) < targetM) slider.value = targetM;
+  document.getElementById('buf-margin-out').textContent = slider.value + '%';
   document.getElementById('buf-client-hint').textContent = CLIENT_MARGINS[c].label;
   runBuffer();
 }
@@ -799,7 +806,8 @@ function runBuffer() {
   const statusEl = document.getElementById('buf-status');
   const titleEl = document.getElementById('buf-status-title');
   const subEl = document.getElementById('buf-status-sub');
-  const minMargin = CLIENT_MARGINS[bufClient].min;
+  const targetMargin = CLIENT_MARGINS[bufClient].target;
+  const minMargin = 23;
   statusEl.style.display = 'block';
 
   if (!fits) {
@@ -818,23 +826,23 @@ function runBuffer() {
     statusEl.style.background = 'var(--danger-light)';
     statusEl.style.border = '1px solid #E8AAAA';
     titleEl.style.color = 'var(--danger)';
-    titleEl.textContent = '⚠️ Маржа нижче мінімуму для цього клієнта';
+    titleEl.textContent = '⚠️ Маржа нижче беззбитковості (23%)';
     subEl.style.color = 'var(--danger)';
-    subEl.textContent = 'Фактична маржа ' + fmtDec(actualMargin) + '%, мінімум для цього клієнта ' + minMargin + '%. Підніми маржу або переглянь бюджет.';
-  } else if (actualMargin >= minMargin && actualMargin < marginPct) {
+    subEl.textContent = 'Фактична маржа ' + fmtDec(actualMargin) + '% — нижче беззбитковості 23%. Студія в збитку.'
+  } else if (actualMargin >= minMargin && actualMargin < targetMargin) {
     statusEl.style.background = 'var(--warn-light)';
     statusEl.style.border = '1px solid #D4A96A';
     titleEl.style.color = 'var(--warn)';
-    titleEl.textContent = '⚠️ Подушка є, маржа трохи нижче цільової';
+    titleEl.textContent = '⚠️ Подушка є, маржа нижче цільової';
     subEl.style.color = 'var(--warn)';
-    subEl.textContent = 'Клієнту ' + estimate + ' год, команді ' + teamHours + ' год, подушка ' + cushionHours + ' год. Фактична маржа ' + fmtDec(actualMargin) + '% — прийнятно.';
+    subEl.textContent = 'Клієнту ' + estimate + ' год, команді ' + teamHours + ' год, подушка ' + cushionHours + ' год (7%). Маржа ' + fmtDec(actualMargin) + '% (цільова: ' + targetMargin + '%). Прийнятно якщо це свідоме рішення.';
   } else {
     statusEl.style.background = 'var(--accent-light)';
     statusEl.style.border = '1px solid var(--accent)';
     titleEl.style.color = 'var(--accent-text)';
     titleEl.textContent = '✅ Все в нормі';
     subEl.style.color = 'var(--accent-text)';
-    subEl.textContent = 'Клієнту ' + estimate + ' год, команді ' + teamHours + ' год, подушка ' + cushionHours + ' год (7%). Маржа ' + fmtDec(actualMargin) + '%.';
+    subEl.textContent = 'Клієнту ' + estimate + ' год, команді ' + teamHours + ' год, подушка ' + cushionHours + ' год (7%). Маржа ' + fmtDec(actualMargin) + '% — вище цільової ' + targetMargin + '%.'; 
   }
 }
 
@@ -862,6 +870,44 @@ function updateBuffer() {
     document.getElementById('r-team-hours').textContent = team + ' год';
   }
 }
+
+function shareCalc() {
+  const params = new URLSearchParams();
+  params.set('type', planType);
+  params.set('budget', document.getElementById('budget').value);
+  params.set('rate', document.getElementById('rate').value);
+  params.set('margin', document.getElementById('margin').value);
+  params.set('duration', document.getElementById('p-duration').value);
+  if (planType === 'art_anim') params.set('mix', document.getElementById('mix-ratio').value);
+  params.set('sal', document.getElementById('c-salaries').value);
+  params.set('svc', document.getElementById('c-services').value);
+  params.set('irr', document.getElementById('c-irregular').value);
+  const url = window.location.href.split('?')[0] + '?' + params.toString();
+  navigator.clipboard.writeText(url).then(() => {
+    const el = document.getElementById('share-copied');
+    el.style.display = 'block';
+    setTimeout(() => el.style.display = 'none', 3000);
+  }).catch(() => { prompt('Скопіюй посилання:', url); });
+}
+
+function loadFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  if (!params.has('budget')) return;
+  if (params.has('type')) setType(params.get('type'));
+  if (params.has('budget')) document.getElementById('budget').value = params.get('budget');
+  if (params.has('rate')) document.getElementById('rate').value = params.get('rate');
+  if (params.has('margin')) document.getElementById('margin').value = params.get('margin');
+  if (params.has('duration')) document.getElementById('p-duration').value = params.get('duration');
+  if (params.has('mix') && document.getElementById('mix-ratio')) {
+    document.getElementById('mix-ratio').value = params.get('mix');
+    updateMixLabel();
+  }
+  if (params.has('sal')) document.getElementById('c-salaries').value = params.get('sal');
+  if (params.has('svc')) document.getElementById('c-services').value = params.get('svc');
+  if (params.has('irr')) document.getElementById('c-irregular').value = params.get('irr');
+  updatePlan();
+}
+loadFromURL();
 </script>
 </body>
 </html>
