@@ -161,15 +161,6 @@
   <!-- ===== TAB 1: PLANNING ===== -->
   <div class="tab-content active" id="tab-plan">
 
-    <div class="card" style="background:#EBF5F0; border:1.5px solid #2D6A4F;">
-      <p style="font-size:11px; font-weight:700; color:#2D6A4F; margin-bottom:8px; letter-spacing:0.06em; text-transform:uppercase;">💡 Важливо перед початком</p>
-      <p style="font-size:13px; color:#1A1A1A; line-height:1.75; margin:0;">
-        <strong>Години для клієнту ≠ Години для команди.</strong><br>
-        Клієнт платить ~€28–30 за годину — в цю ціну вже закладено маржу студії, overhead і дивіденди власників. Команда отримує свою ставку (360–466 грн/год), яка значно менша.<br><br>
-        Тому <strong>не ставте команді той самий естімейт що і клієнту</strong> — команда не встигне. Для внутрішнього SOW команди використовуй <strong>максимум годин з цього калькулятора</strong>.
-      </p>
-    </div>
-
     <div class="card">
       <p class="section-label">Тип проекту</p>
       <div class="type-row">
@@ -190,7 +181,7 @@
       <p class="section-label">Параметри проекту</p>
       <div class="slider-group">
         <div class="slider-header"><label>Бюджет проекту</label><span class="val" id="budget-out">€8 000</span></div>
-        <input type="range" min="3000" max="30000" step="100" value="8000" id="budget" oninput="updatePlan()">
+        <input type="range" min="2000" max="30000" step="100" value="8000" id="budget" oninput="updatePlan()">
       </div>
       <div class="slider-group">
         <div class="slider-header"><label>Курс EUR / UAH</label><span class="val" id="rate-out">51.4</span></div>
@@ -231,17 +222,15 @@
     <div class="card">
       <p class="section-label">Результат</p>
       <div class="results-grid">
-        <div class="result-row"><span class="lbl">Прибуток студії</span><span class="rval" id="r-profit">—</span></div>
+        <div class="result-row"><span class="lbl">Вартість проекту, грн</span><span class="rval" id="r-uah">—</span></div>
+        <div class="result-row"><span class="lbl">Overhead без ЗП команди (1/6.5 × <span id="r-months">1</span> міс)</span><span class="rval" id="r-overhead">—</span></div>
+        <div class="result-row"><span class="lbl">Залишається після маржі</span><span class="rval" id="r-after-margin">—</span></div>
+        <div class="result-row"><span class="lbl">Доступно на пряму ЗП</span><span class="rval" id="r-payroll">—</span></div>
         <div class="result-row"><span class="lbl">Середня ставка команди</span><span class="rval" id="r-avgrate">—</span></div>
         <div class="result-main good" id="r-main">
           <span class="lbl">Максимум годин на проект</span>
           <span class="rval" id="r-hours">—</span>
         </div>
-        <div id="r-margin-hint" style="display:none; margin-top:10px; padding:10px 14px; border-radius:10px; font-size:12px; line-height:1.6;"></div>
-        <button onclick="shareCalc()" id="share-btn" style="display:none; margin-top:12px; width:100%; padding:10px; background:var(--bg); border:1px solid var(--border); border-radius:10px; font-size:13px; color:var(--text); cursor:pointer;">
-          🔗 Поділитися розрахунком
-        </button>
-        <div id="share-copied" style="display:none; margin-top:6px; text-align:center; font-size:12px; color:var(--accent);">✅ Посилання скопійовано!</div>
       </div>
 
     </div>
@@ -260,14 +249,6 @@
 
   <!-- ===== TAB 2: ANALYSIS ===== -->
   <div class="tab-content" id="tab-analysis">
-
-    <div class="card" style="background:#F5F5F5; border:1.5px solid #CCCCCC;">
-      <p style="font-size:11px; font-weight:700; color:#555555; margin-bottom:8px; letter-spacing:0.06em; text-transform:uppercase;">Для чого цей розділ</p>
-      <p style="font-size:13px; color:#1A1A1A; line-height:1.75; margin:0;">
-        Використовуй цю вкладку щоб перевірити рентабельність вже завершеного або старого проекту — наприклад, якщо він рахувався давно або без калькулятора і ти хочеш зрозуміти, наскільки він був прибутковим для студії.<br><br>
-        Введи фактичну вартість проекту, реальні відпрацьовані години (з Jira), курс і тривалість — і калькулятор покаже фактичну маржинальність.
-      </p>
-    </div>
 
     <div class="card">
       <p class="section-label">Параметри проекту</p>
@@ -353,16 +334,7 @@
 
   <!-- ===== TAB 3: BUFFER ===== -->
   <div class="tab-content" id="tab-buffer">
-
-    <div class="card" style="background:#F5F5F5; border:1.5px solid #CCCCCC;">
-      <p style="font-size:11px; font-weight:700; color:#555555; margin-bottom:8px; letter-spacing:0.06em; text-transform:uppercase;">Для чого цей розділ</p>
-      <p style="font-size:13px; color:#1A1A1A; line-height:1.75; margin:0;">
-        Цей розділ допомагає визначити <strong>подушку</strong> — різницю між годинами, які ми поставили клієнту, і годинами, які отримує команда для розробки.<br><br>
-        Подушка формується на основі бюджету проекту, маржі та реальних операційних витрат студії — тому її завжди треба брати звідси, а не рахувати вручну. Це гарантує що студія залишається прибутковою і у команди є реальний запас часу на правки та непередбачені ситуації.<br><br>
-        <strong>Всі дані з вкладки «Планування» підтягуються сюди автоматично.</strong> Потрібно тільки вписати кількість годин що поставив клієнту — і калькулятор покаже скільки годин ставити команді.<br><br>
-        <strong>Подушку завжди беремо з цього калькулятора.</strong>
-      </p>
-    </div>
+    <input type="hidden" id="buf-margin" value="30">
 
     <div class="card">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem;">
@@ -397,13 +369,6 @@
           <button class="type-btn" onclick="setBufClient('elk')" id="buf-btn-elk">Elk Studio</button>
           <button class="type-btn" onclick="setBufClient('all41')" id="buf-btn-all41">All41</button>
         </div>
-      </div>
-      <div class="slider-group" style="margin-bottom:0">
-        <div class="slider-header">
-          <label>Цільова маржа</label>
-          <span class="val" id="buf-margin-out">30%</span>
-        </div>
-        <input type="range" min="10" max="60" step="1" value="30" id="buf-margin" oninput="runBuffer()">
       </div>
       <div style="margin-top:8px">
         <p class="section-label" style="margin-bottom:8px;">Тип проекту</p>
@@ -473,10 +438,9 @@ function switchTab(tab) {
     if (budget) document.getElementById('buf-budget').value = budget;
     if (rate) document.getElementById('buf-rate').value = rate;
     if (duration) document.getElementById('buf-duration').value = duration;
-    // Set margin to client minimum (not copy from planning)
-    const minM = CLIENT_MARGINS[bufClient].min;
-    document.getElementById('buf-margin').value = minM;
-    document.getElementById('buf-margin-out').textContent = minM + '%';
+    // Copy margin from planning tab
+    const planMargin = document.getElementById('margin').value;
+    document.getElementById('buf-margin').value = planMargin;
     // Copy project type
     setBufType(planType);
     // Copy mix ratio if art_anim
@@ -547,6 +511,7 @@ function updatePlan() {
   document.getElementById('rate-out').textContent = rate.toFixed(1);
   document.getElementById('margin-out').textContent = marginPct + '%';
   const duration = parseFloat(document.getElementById('p-duration').value) || 1;
+  document.getElementById('r-months').textContent = duration;
 
   const totalPerMonth = getTotalCosts();
   document.getElementById('c-total').textContent = fmt(totalPerMonth) + ' грн';
@@ -558,34 +523,22 @@ function updatePlan() {
   const avgRate = getAvgRate(planType);
   const hours = availableForPayroll > 0 ? Math.round(availableForPayroll / avgRate) : 0;
 
-  const profitUah = Math.round(budgetUah * (marginPct / 100));
-  const profitEur = Math.round(profitUah / rate);
-  document.getElementById('r-profit').textContent = fmt(profitUah) + ' грн / €' + fmt(profitEur);
+  document.getElementById('r-uah').textContent = fmt(budgetUah) + ' грн';
+  document.getElementById('r-overhead').textContent = fmt(overheadShare) + ' грн';
+  document.getElementById('r-after-margin').textContent = fmt(afterMargin) + ' грн';
+  document.getElementById('r-payroll').textContent = availableForPayroll > 0 ? fmt(availableForPayroll) + ' грн' : '⚠ збиток';
   document.getElementById('r-avgrate').textContent = avgRate + ' грн/год (' + getRateLabel(planType) + ')';
 
   const rMain = document.getElementById('r-main');
   const hoursEl = document.getElementById('r-hours');
-  const hintEl = document.getElementById('r-margin-hint');
   if (hours > 0) {
     hoursEl.textContent = hours + ' год';
     rMain.className = 'result-main good';
-    document.getElementById('share-btn').style.display = 'block';
-    hintEl.style.display = 'block';
-    hintEl.style.background = '#F5F5F5';
-    hintEl.style.border = '1px solid #CCCCCC';
-    hintEl.style.color = '#555555';
-    if (hours > 600) {
-      hintEl.innerHTML = '💡 Якщо для цього проекту стільки годин не потрібно — підніми цільову маржу на 5–10%. Компанія заробить більше: реального часу потрібно менше, а різниця йде в прибуток студії.<br><br>Після того як визначиш естімейт клієнту — перейди у вкладку <strong>«Подушка»</strong>. Дані з цієї сторінки підтягнуться автоматично, потрібно тільки вписати кількість годин що поставив клієнту.';
-    } else if (hours < 200) {
-      hintEl.innerHTML = '💡 Якщо годин не вистачає — спробуй знизити маржу на 5% і перерахуй. Після цього перейди у вкладку <strong>«Подушка»</strong> і перерахуй подушку з новими даними. Дані з цієї сторінки підтягнуться автоматично, потрібно тільки вписати кількість годин що поставив клієнту.';
-    } else {
-      hintEl.innerHTML = '💡 Після того як визначиш естімейт клієнту — перейди у вкладку <strong>«Подушка»</strong>. Дані з цієї сторінки підтягнуться автоматично, потрібно тільки вписати кількість годин що поставив клієнту.';
-    }
+
   } else {
     hoursEl.textContent = '0 год';
     rMain.className = 'result-main bad';
-    document.getElementById('share-btn').style.display = 'none';
-    hintEl.style.display = 'none';
+
   }
 
   const lossCard = document.getElementById('loss-card');
@@ -712,20 +665,19 @@ let bufClient = 'other';
 let bufType = 'art';
 
 const CLIENT_MARGINS = {
-  'other':  { min: 23, target: 40, label: 'Інші клієнти: цільова 40% | мін. беззбитковість 23%' },
-  'ela':    { min: 23, target: 50, label: 'Ela Games: цільова 50%+ | мін. беззбитковість 23%' },
-  'elk':    { min: 23, target: 50, label: 'Elk Studio: цільова 50%+ | мін. беззбитковість 23%' },
-  'all41':  { min: 23, target: 45, label: 'All41: цільова 45%+ | мін. беззбитковість 23%' },
+  'other':  { min: 35, label: 'Інші клієнти: мін. маржа 35%, цільова 40%' },
+  'ela':    { min: 40, label: 'Ela Games: мін. маржа 40%, цільова 50%+' },
+  'elk':    { min: 45, label: 'Elk Studio: мін. маржа 45%, цільова 50%+' },
+  'all41':  { min: 40, label: 'All41: мін. маржа 40%, цільова 45%+' },
 };
 
 function setBufClient(c) {
   bufClient = c;
   ['other','ela','elk','all41'].forEach(x => document.getElementById('buf-btn-' + x).classList.toggle('active', x === c));
   // Set margin slider to client minimum
-  const targetM = CLIENT_MARGINS[c].target;
+  const minM = CLIENT_MARGINS[c].min;
   const slider = document.getElementById('buf-margin');
-  if (parseInt(slider.value) < targetM) slider.value = targetM;
-  document.getElementById('buf-margin-out').textContent = slider.value + '%';
+  if (parseInt(slider.value) < minM) slider.value = minM;
   document.getElementById('buf-client-hint').textContent = CLIENT_MARGINS[c].label;
   runBuffer();
 }
@@ -756,8 +708,6 @@ function runBuffer() {
   const rate = parseFloat(document.getElementById('buf-rate').value) || 51.4;
   const dur = parseFloat(document.getElementById('buf-duration').value) || 1.5;
   const marginPct = parseInt(document.getElementById('buf-margin').value);
-  document.getElementById('buf-margin-out').textContent = marginPct + '%';
-
   if (!estimate || !budget) {
     document.getElementById('buffer-result').classList.remove('visible');
     return;
@@ -806,8 +756,7 @@ function runBuffer() {
   const statusEl = document.getElementById('buf-status');
   const titleEl = document.getElementById('buf-status-title');
   const subEl = document.getElementById('buf-status-sub');
-  const targetMargin = CLIENT_MARGINS[bufClient].target;
-  const minMargin = 23;
+  const minMargin = CLIENT_MARGINS[bufClient].min;
   statusEl.style.display = 'block';
 
   if (!fits) {
@@ -826,23 +775,23 @@ function runBuffer() {
     statusEl.style.background = 'var(--danger-light)';
     statusEl.style.border = '1px solid #E8AAAA';
     titleEl.style.color = 'var(--danger)';
-    titleEl.textContent = '⚠️ Маржа нижче беззбитковості (23%)';
+    titleEl.textContent = '⚠️ Маржа нижче мінімуму для цього клієнта';
     subEl.style.color = 'var(--danger)';
-    subEl.textContent = 'Фактична маржа ' + fmtDec(actualMargin) + '% — нижче беззбитковості 23%. Студія в збитку.'
-  } else if (actualMargin >= minMargin && actualMargin < targetMargin) {
+    subEl.textContent = 'Фактична маржа ' + fmtDec(actualMargin) + '%, мінімум для цього клієнта ' + minMargin + '%. Підніми маржу або переглянь бюджет.';
+  } else if (actualMargin >= minMargin && actualMargin < marginPct) {
     statusEl.style.background = 'var(--warn-light)';
     statusEl.style.border = '1px solid #D4A96A';
     titleEl.style.color = 'var(--warn)';
-    titleEl.textContent = '⚠️ Подушка є, маржа нижче цільової';
+    titleEl.textContent = '⚠️ Подушка є, маржа трохи нижче цільової';
     subEl.style.color = 'var(--warn)';
-    subEl.textContent = 'Клієнту ' + estimate + ' год, команді ' + teamHours + ' год, подушка ' + cushionHours + ' год (7%). Маржа ' + fmtDec(actualMargin) + '% (цільова: ' + targetMargin + '%). Прийнятно якщо це свідоме рішення.';
+    subEl.textContent = 'Клієнту ' + estimate + ' год, команді ' + teamHours + ' год, подушка ' + cushionHours + ' год. Фактична маржа ' + fmtDec(actualMargin) + '% — прийнятно.';
   } else {
     statusEl.style.background = 'var(--accent-light)';
     statusEl.style.border = '1px solid var(--accent)';
     titleEl.style.color = 'var(--accent-text)';
     titleEl.textContent = '✅ Все в нормі';
     subEl.style.color = 'var(--accent-text)';
-    subEl.textContent = 'Клієнту ' + estimate + ' год, команді ' + teamHours + ' год, подушка ' + cushionHours + ' год (7%). Маржа ' + fmtDec(actualMargin) + '% — вище цільової ' + targetMargin + '%.'; 
+    subEl.textContent = 'Клієнту ' + estimate + ' год, команді ' + teamHours + ' год, подушка ' + cushionHours + ' год (7%). Маржа ' + fmtDec(actualMargin) + '%.';
   }
 }
 
@@ -852,7 +801,6 @@ function resetBuffer() {
   document.getElementById('buf-rate').value = '51.4';
   document.getElementById('buf-duration').value = '1.5';
   document.getElementById('buf-margin').value = '35';
-  document.getElementById('buf-margin-out').textContent = '35%';
   setBufClient('other');
   setBufType('art');
   document.getElementById('buffer-result').classList.remove('visible');
@@ -870,103 +818,6 @@ function updateBuffer() {
     document.getElementById('r-team-hours').textContent = team + ' год';
   }
 }
-
-function shareCalc() {
-  const params = new URLSearchParams();
-  params.set('type', planType);
-  params.set('budget', document.getElementById('budget').value);
-  params.set('rate', document.getElementById('rate').value);
-  params.set('margin', document.getElementById('margin').value);
-  params.set('duration', document.getElementById('p-duration').value);
-  if (planType === 'art_anim') params.set('mix', document.getElementById('mix-ratio').value);
-  params.set('sal', document.getElementById('c-salaries').value);
-  params.set('svc', document.getElementById('c-services').value);
-  params.set('irr', document.getElementById('c-irregular').value);
-  const url = window.location.href.split('?')[0] + '?' + params.toString();
-  navigator.clipboard.writeText(url).then(() => {
-    const el = document.getElementById('share-copied');
-    el.style.display = 'block';
-    setTimeout(() => el.style.display = 'none', 3000);
-  }).catch(() => { prompt('Скопіюй посилання:', url); });
-}
-
-function loadFromURL() {
-  const params = new URLSearchParams(window.location.search);
-  if (!params.has('budget')) return;
-  if (params.has('type')) setType(params.get('type'));
-  if (params.has('budget')) document.getElementById('budget').value = params.get('budget');
-  if (params.has('rate')) document.getElementById('rate').value = params.get('rate');
-  if (params.has('margin')) document.getElementById('margin').value = params.get('margin');
-  if (params.has('duration')) document.getElementById('p-duration').value = params.get('duration');
-  if (params.has('mix') && document.getElementById('mix-ratio')) {
-    document.getElementById('mix-ratio').value = params.get('mix');
-    updateMixLabel();
-  }
-  if (params.has('sal')) document.getElementById('c-salaries').value = params.get('sal');
-  if (params.has('svc')) document.getElementById('c-services').value = params.get('svc');
-  if (params.has('irr')) document.getElementById('c-irregular').value = params.get('irr');
-  updatePlan();
-}
-loadFromURL();
-</script>
-
-<style>
-#pw-overlay {
-  position: fixed; inset: 0; background: var(--bg, #F5F0E8);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 9999;
-}
-#pw-box {
-  background: white; border-radius: 16px; padding: 40px 32px;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.08); width: 320px; text-align: center;
-}
-#pw-logo { font-size: 28px; font-weight: 700; color: #2D6A4F; margin-bottom: 8px; }
-#pw-sub { font-size: 13px; color: #888; margin-bottom: 24px; }
-#pw-input {
-  width: 100%; padding: 12px 14px; border: 1.5px solid #DDD;
-  border-radius: 10px; font-size: 15px; outline: none;
-  box-sizing: border-box; text-align: center; letter-spacing: 2px;
-  font-family: DM Mono, monospace;
-}
-#pw-input:focus { border-color: #2D6A4F; }
-#pw-btn {
-  margin-top: 12px; width: 100%; padding: 12px;
-  background: #2D6A4F; color: white; border: none;
-  border-radius: 10px; font-size: 14px; font-weight: 600;
-  cursor: pointer;
-}
-#pw-btn:hover { background: #245A42; }
-#pw-error { color: #C0392B; font-size: 12px; margin-top: 8px; display: none; }
-</style>
-<div id="pw-overlay">
-  <div id="pw-box">
-    <div id="pw-logo">PicShot Studio</div>
-    <div id="pw-sub">Калькулятор проектів · Введіть пароль</div>
-    <input type="password" id="pw-input" placeholder="••••••••••••" onkeydown="if(event.key==='Enter')checkPw()">
-    <button id="pw-btn" onclick="checkPw()">Увійти</button>
-    <div id="pw-error">Невірний пароль</div>
-  </div>
-</div>
-<script>
-(function() {
-  var PASS = 'ilovepicshot';
-  var KEY = 'ps_auth';
-  if (sessionStorage.getItem(KEY) === '1') {
-    document.getElementById('pw-overlay').style.display = 'none';
-  }
-  window.checkPw = function() {
-    var val = document.getElementById('pw-input').value;
-    if (val === PASS) {
-      sessionStorage.setItem(KEY, '1');
-      document.getElementById('pw-overlay').style.display = 'none';
-    } else {
-      var err = document.getElementById('pw-error');
-      err.style.display = 'block';
-      document.getElementById('pw-input').value = '';
-      setTimeout(function(){ err.style.display = 'none'; }, 2000);
-    }
-  };
-})();
 </script>
 </body>
 </html>
