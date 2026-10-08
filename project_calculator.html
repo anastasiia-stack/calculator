@@ -233,6 +233,10 @@
         </div>
       </div>
 
+      <div style="margin-top:12px; text-align:right;">
+        <button onclick="copyShareLink()" id="share-btn" style="font-size:12px; color:var(--muted); background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:6px 12px; cursor:pointer; display:inline-flex; align-items:center; gap:5px;">🔗 Скопіювати розрахунок</button>
+      </div>
+
     </div>
 
     <div class="loss-card" id="loss-card">
@@ -818,6 +822,44 @@ function updateBuffer() {
     document.getElementById('r-team-hours').textContent = team + ' год';
   }
 }
+
+function copyShareLink() {
+  const params = new URLSearchParams();
+  params.set('budget', document.getElementById('budget').value);
+  params.set('rate', document.getElementById('rate').value);
+  params.set('margin', document.getElementById('margin').value);
+  params.set('duration', document.getElementById('p-duration').value);
+  params.set('type', planType);
+  if (planType === 'art_anim') params.set('mix', document.getElementById('mix-ratio').value);
+  params.set('sal', document.getElementById('c-salaries').value);
+  params.set('svc', document.getElementById('c-services').value);
+  params.set('irr', document.getElementById('c-irregular').value);
+
+  const url = location.href.split('?')[0] + '?' + params.toString();
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.getElementById('share-btn');
+    btn.textContent = '✅ Скопійовано!';
+    setTimeout(() => { btn.innerHTML = '🔗 Скопіювати розрахунок'; }, 2000);
+  }).catch(() => {
+    prompt('Скопіюй посилання:', url);
+  });
+}
+
+function loadFromURL() {
+  const p = new URLSearchParams(location.search);
+  if (!p.has('budget')) return;
+  if (p.has('budget')) { document.getElementById('budget').value = p.get('budget'); document.getElementById('budget-out').textContent = '€' + fmt(+p.get('budget')); }
+  if (p.has('rate'))   { document.getElementById('rate').value = p.get('rate'); document.getElementById('rate-out').textContent = p.get('rate'); }
+  if (p.has('margin')) { document.getElementById('margin').value = p.get('margin'); document.getElementById('margin-out').textContent = p.get('margin') + '%'; }
+  if (p.has('duration')) document.getElementById('p-duration').value = p.get('duration');
+  if (p.has('type')) setType(p.get('type'));
+  if (p.has('mix')) { document.getElementById('mix-ratio').value = p.get('mix'); updateMixLabel(); }
+  if (p.has('sal')) document.getElementById('c-salaries').value = p.get('sal');
+  if (p.has('svc')) document.getElementById('c-services').value = p.get('svc');
+  if (p.has('irr')) document.getElementById('c-irregular').value = p.get('irr');
+  updatePlan();
+}
+loadFromURL();
 </script>
 </body>
 </html>
